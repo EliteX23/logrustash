@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/EliteX23/logrus"
 )
 
 // Hook represents a connection to a Logstash instance

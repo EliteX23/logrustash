@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/sirupsen/logrus"
+	"github.com/EliteX23/logrus"
 )
 
 func TestLogstashFormatter(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/EliteX23/logrus"
 )
 
 func TestLogstashHook(t *testing.T) {

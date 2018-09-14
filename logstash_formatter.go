@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/EliteX23/logrus"
 )
 
 // LogstashFormatter generates json in logstash format.
@@ -35,7 +35,7 @@ func (f *LogstashFormatter) FormatWithPrefix(entry *logrus.Entry, prefix string)
 		switch v := v.(type) {
 		case error:
 			// Otherwise errors are ignored by `encoding/json`
-			// https://github.com/Sirupsen/logrus/issues/377
+			// https://github.com/EliteX23/logrus/issues/377
 			fields[k] = v.Error()
 		default:
 			fields[k] = v

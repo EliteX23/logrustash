@@ -23,7 +23,7 @@ Added features:
 package main
 
 import (
-    "github.com/sirupsen/logrus"
+    "github.com/EliteX23/logrus"
     "github.com/ylamothe/logrustash"
 )
 
