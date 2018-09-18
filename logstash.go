@@ -21,7 +21,7 @@ type Hook struct {
 	alwaysSentFields         logrus.Fields
 	hookOnlyPrefix           string
 	TimeFormat               string
-	fireChannel              chan *logrus.Entry
+	fireChannel              chan logrus.Entry
 	AsyncBufferSize          int
 	WaitUntilBufferFrees     bool
 	Timeout                  time.Duration // Timeout for sending message.
@@ -33,47 +33,47 @@ type Hook struct {
 
 // NewHook creates a new hook to a Logstash instance, which listens on
 // `protocol`://`address`.
-func NewHook(protocol, address, appName string) (*Hook, error) {
+func NewHook(protocol, address, appName string) (Hook, error) {
 	return NewHookWithFields(protocol, address, appName, make(logrus.Fields))
 }
 
 // NewAsyncHook creates a new hook to a Logstash instance, which listens on
 // `protocol`://`address`.
 // Logs will be sent asynchronously.
-func NewAsyncHook(protocol, address, appName string) (*Hook, error) {
+func NewAsyncHook(protocol, address, appName string) (Hook, error) {
 	return NewAsyncHookWithFields(protocol, address, appName, make(logrus.Fields))
 }
 
 // NewHookWithConn creates a new hook to a Logstash instance, using the supplied connection.
-func NewHookWithConn(conn net.Conn, appName string) (*Hook, error) {
+func NewHookWithConn(conn net.Conn, appName string) (Hook, error) {
 	return NewHookWithFieldsAndConn(conn, appName, make(logrus.Fields))
 }
 
 // NewAsyncHookWithConn creates a new hook to a Logstash instance, using the supplied connection.
 // Logs will be sent asynchronously.
-func NewAsyncHookWithConn(conn net.Conn, appName string) (*Hook, error) {
+func NewAsyncHookWithConn(conn net.Conn, appName string) (Hook, error) {
 	return NewAsyncHookWithFieldsAndConn(conn, appName, make(logrus.Fields))
 }
 
 // NewHookWithFields creates a new hook to a Logstash instance, which listens on
 // `protocol`://`address`. alwaysSentFields will be sent with every log entry.
-func NewHookWithFields(protocol, address, appName string, alwaysSentFields logrus.Fields) (*Hook, error) {
+func NewHookWithFields(protocol, address, appName string, alwaysSentFields logrus.Fields) (Hook, error) {
 	return NewHookWithFieldsAndPrefix(protocol, address, appName, alwaysSentFields, "")
 }
 
 // NewAsyncHookWithFields creates a new hook to a Logstash instance, which listens on
 // `protocol`://`address`. alwaysSentFields will be sent with every log entry.
 // Logs will be sent asynchronously.
-func NewAsyncHookWithFields(protocol, address, appName string, alwaysSentFields logrus.Fields) (*Hook, error) {
+func NewAsyncHookWithFields(protocol, address, appName string, alwaysSentFields logrus.Fields) (Hook, error) {
 	return NewAsyncHookWithFieldsAndPrefix(protocol, address, appName, alwaysSentFields, "")
 }
 
 // NewHookWithFieldsAndPrefix creates a new hook to a Logstash instance, which listens on
 // `protocol`://`address`. alwaysSentFields will be sent with every log entry. prefix is used to select fields to filter.
-func NewHookWithFieldsAndPrefix(protocol, address, appName string, alwaysSentFields logrus.Fields, prefix string) (*Hook, error) {
+func NewHookWithFieldsAndPrefix(protocol, address, appName string, alwaysSentFields logrus.Fields, prefix string) (Hook, error) {
 	conn, err := net.Dial(protocol, address)
 	if err != nil {
-		return nil, err
+		return Hook{}, err
 	}
 
 	hook, err := NewHookWithFieldsAndConnAndPrefix(conn, appName, alwaysSentFields, prefix)
@@ -86,10 +86,10 @@ func NewHookWithFieldsAndPrefix(protocol, address, appName string, alwaysSentFie
 // NewAsyncHookWithFieldsAndPrefix creates a new hook to a Logstash instance, which listens on
 // `protocol`://`address`. alwaysSentFields will be sent with every log entry. prefix is used to select fields to filter.
 // Logs will be sent asynchronously.
-func NewAsyncHookWithFieldsAndPrefix(protocol, address, appName string, alwaysSentFields logrus.Fields, prefix string) (*Hook, error) {
+func NewAsyncHookWithFieldsAndPrefix(protocol, address, appName string, alwaysSentFields logrus.Fields, prefix string) (Hook, error) {
 	hook, err := NewHookWithFieldsAndPrefix(protocol, address, appName, alwaysSentFields, prefix)
 	if err != nil {
-		return nil, err
+		return Hook{}, err
 	}
 	hook.AsyncBufferSize = 8192
 	hook.makeAsync()
@@ -98,25 +98,25 @@ func NewAsyncHookWithFieldsAndPrefix(protocol, address, appName string, alwaysSe
 }
 
 // NewHookWithFieldsAndConn creates a new hook to a Logstash instance using the supplied connection.
-func NewHookWithFieldsAndConn(conn net.Conn, appName string, alwaysSentFields logrus.Fields) (*Hook, error) {
+func NewHookWithFieldsAndConn(conn net.Conn, appName string, alwaysSentFields logrus.Fields) (Hook, error) {
 	return NewHookWithFieldsAndConnAndPrefix(conn, appName, alwaysSentFields, "")
 }
 
 // NewAsyncHookWithFieldsAndConn creates a new hook to a Logstash instance using the supplied connection.
 // Logs will be sent asynchronously.
-func NewAsyncHookWithFieldsAndConn(conn net.Conn, appName string, alwaysSentFields logrus.Fields) (*Hook, error) {
+func NewAsyncHookWithFieldsAndConn(conn net.Conn, appName string, alwaysSentFields logrus.Fields) (Hook, error) {
 	return NewAsyncHookWithFieldsAndConnAndPrefix(conn, appName, alwaysSentFields, "")
 }
 
 //NewHookWithFieldsAndConnAndPrefix creates a new hook to a Logstash instance using the suppolied connection and prefix.
-func NewHookWithFieldsAndConnAndPrefix(conn net.Conn, appName string, alwaysSentFields logrus.Fields, prefix string) (*Hook, error) {
-	return &Hook{conn: conn, appName: appName, alwaysSentFields: alwaysSentFields, hookOnlyPrefix: prefix}, nil
+func NewHookWithFieldsAndConnAndPrefix(conn net.Conn, appName string, alwaysSentFields logrus.Fields, prefix string) (Hook, error) {
+	return Hook{conn: conn, appName: appName, alwaysSentFields: alwaysSentFields, hookOnlyPrefix: prefix}, nil
 }
 
 // NewAsyncHookWithFieldsAndConnAndPrefix creates a new hook to a Logstash instance using the suppolied connection and prefix.
 // Logs will be sent asynchronously.
-func NewAsyncHookWithFieldsAndConnAndPrefix(conn net.Conn, appName string, alwaysSentFields logrus.Fields, prefix string) (*Hook, error) {
-	hook := &Hook{conn: conn, appName: appName, alwaysSentFields: alwaysSentFields, hookOnlyPrefix: prefix}
+func NewAsyncHookWithFieldsAndConnAndPrefix(conn net.Conn, appName string, alwaysSentFields logrus.Fields, prefix string) (Hook, error) {
+	hook := Hook{conn: conn, appName: appName, alwaysSentFields: alwaysSentFields, hookOnlyPrefix: prefix}
 	hook.makeAsync()
 
 	return hook, nil
@@ -147,8 +147,8 @@ func NewAsyncFilterHookWithPrefix(prefix string) *Hook {
 	return hook
 }
 
-func (h *Hook) makeAsync() {
-	h.fireChannel = make(chan *logrus.Entry, h.AsyncBufferSize)
+func (h Hook) makeAsync() {
+	h.fireChannel = make(chan logrus.Entry, h.AsyncBufferSize)
 
 	go func() {
 		for entry := range h.fireChannel {
@@ -159,7 +159,7 @@ func (h *Hook) makeAsync() {
 	}()
 }
 
-func (h *Hook) filterHookOnly(entry *logrus.Entry) {
+func (h *Hook) filterHookOnly(entry logrus.Entry) {
 	if h.hookOnlyPrefix != "" {
 		for key := range entry.Data {
 			if strings.HasPrefix(key, h.hookOnlyPrefix) {
@@ -191,7 +191,7 @@ func (h *Hook) WithFields(fields logrus.Fields) {
 // Fire send message to logstash.
 // In async mode log message will be dropped if message buffer is full.
 // If you want wait until message buffer frees – set WaitUntilBufferFrees to true.
-func (h *Hook) Fire(entry *logrus.Entry) error {
+func (h Hook) Fire(entry logrus.Entry) error {
 	if h.fireChannel != nil { // Async mode.
 		select {
 		case h.fireChannel <- entry:
@@ -211,7 +211,7 @@ func (h *Hook) Fire(entry *logrus.Entry) error {
 	return h.sendMessage(entry)
 }
 
-func (h *Hook) sendMessage(entry *logrus.Entry) error {
+func (h Hook) sendMessage(entry logrus.Entry) error {
 	// Make sure we always clear the hook only fields from the entry
 	defer h.filterHookOnly(entry)
 
@@ -327,7 +327,7 @@ func (h *Hook) isNeedToReconnect(reconnectRetries int) bool {
 
 // Levels specifies "active" log levels.
 // Log messages with this levels will be sent to logstash.
-func (h *Hook) Levels() []logrus.Level {
+func (h Hook) Levels() []logrus.Level {
 	return []logrus.Level{
 		logrus.PanicLevel,
 		logrus.FatalLevel,

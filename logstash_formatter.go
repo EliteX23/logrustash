@@ -19,12 +19,12 @@ type LogstashFormatter struct {
 }
 
 // Format formats log message.
-func (f *LogstashFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (f *LogstashFormatter) Format(entry logrus.Entry) ([]byte, error) {
 	return f.FormatWithPrefix(entry, "")
 }
 
 // FormatWithPrefix removes prefix from keys and formats log message.
-func (f *LogstashFormatter) FormatWithPrefix(entry *logrus.Entry, prefix string) ([]byte, error) {
+func (f *LogstashFormatter) FormatWithPrefix(entry logrus.Entry, prefix string) ([]byte, error) {
 	fields := make(logrus.Fields)
 	for k, v := range entry.Data {
 		// Remove the prefix when sending the fields to logstash
